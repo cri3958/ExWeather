@@ -20,6 +20,7 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
@@ -49,21 +50,34 @@ class MainActivity : AppCompatActivity() {
         val assetManager: AssetManager = resources.assets
         val inputStream: InputStream = assetManager.open("NationalWeatherDB.txt")
         val NationalWeatherDB = Room.databaseBuilder(this, AppDatabase::class.java, "db").build()
+        val file = getDatabasePath("db")
+        if(!file.exists()) {
+            Log.d(TAG, "db 는 존재하지않았음")
 
-        inputStream.bufferedReader().readLines().forEach {
-            var token = it.split("\t")
-            //Log.d(TAG, "Print : $it")
-            var input = NationalWeatherTable(
-                token[0].toLong(),
-                token[1],
-                token[2],
-                token[3],
-                token[4].toInt(),
-                token[5].toInt()
-            )
-            CoroutineScope(Dispatchers.Main).launch {
+            inputStream.bufferedReader().readLines().forEach {
+                var token = it.split("\t")
+                //Log.d(TAG, "Print : $it")
+                var input = NationalWeatherTable(
+                    token[0].toLong(),
+                    token[1],
+                    token[2],
+                    token[3],
+                    token[4].toInt(),
+                    token[5].toInt()
+                )
+                val r = Runnable {
+                    // 데이터에 읽고 쓸때는 쓰레드 사용
+                    NationalWeatherDB.nationalWeatherInterface().insert(input)
+                }
+
+                val thread = Thread(r)
+                thread.start()
+                /*CoroutineScope(Dispatchers.Main).launch {
                 NationalWeatherDB.nationalWeatherInterface().insert(input)
+            }*/
             }
+        }else{
+            Log.d(TAG, "db 는 이미 존재함")
         }
 
         CoroutineScope(Dispatchers.Main).launch {
