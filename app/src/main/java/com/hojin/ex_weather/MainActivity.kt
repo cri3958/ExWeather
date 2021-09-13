@@ -81,7 +81,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.Main).launch {
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
 
             if (ActivityCompat.checkSelfPermission(
                     applicationContext,
@@ -94,12 +93,22 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "onCreate: 권한가져와 응애")
                 return@launch
             }
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location: Location? ->
-                    if (location != null) {
-                        mLocation = location
-                    }
+
+
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)//or this@MainActivity로 하다가 오류나는거 같기도함??
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                location?.let { it: Location ->
+                    // Logic to handle location object
+                    mLocation = it
+                    Log.d(TAG, "mLocation Update")
+                } ?: kotlin.run {
+                    // Handle Null case or Request periodic location update https://developer.android.com/training/location/receive-location-updates
+                    Log.d(TAG, "mLocation Update for getLastLocation")
+                    //mLocation = LocationServices.FusedLocationApi.getLastLocation()  //이거 어캐씀 코루틴 빠져나가야되나 코루틴이 필요한가???????
                 }
+            }
+
+
 
             val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
 
