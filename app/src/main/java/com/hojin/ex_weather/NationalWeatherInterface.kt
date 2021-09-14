@@ -19,7 +19,7 @@ interface NationalWeatherInterface {
     @Insert
     fun insert(nationalWeatherTable: NationalWeatherTable)
 
-    @Query("SELECT * FROM $table WHERE $string1 = :s1 AND $string2 = :s2 AND $string3 = :s3")
-    fun search(s1:String, s2:String, s3:String):List<NationalWeatherTable>
+    @Query("SELECT * FROM $table WHERE $string1 = :s1 AND $string2 = :s2")
+    fun search(s1:String, s2:String):List<NationalWeatherTable>
 
 }
