@@ -20,7 +20,6 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,9 +54,9 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "db 는 존재하지않았음")
 
             inputStream.bufferedReader().readLines().forEach {
-                var token = it.split("\t")
+                val token = it.split("\t")
                 //Log.d(TAG, "Print : $it")
-                var input = NationalWeatherTable(
+                val input = NationalWeatherTable(
                     token[0].toLong(),
                     token[1],
                     token[2],
@@ -72,88 +71,101 @@ class MainActivity : AppCompatActivity() {
 
                 val thread = Thread(r)
                 thread.start()
-                /*CoroutineScope(Dispatchers.Main).launch {
-                NationalWeatherDB.nationalWeatherInterface().insert(input)
-            }*/
             }
         }else{
             Log.d(TAG, "db 는 이미 존재함")
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
+        if (ActivityCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.d(TAG, "onCreate: 권한가져와 응애")
+            return
+        }
 
-            if (ActivityCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.d(TAG, "onCreate: 권한가져와 응애")
-                return@launch
-            }
+        var isFinished = true
+
+
+            fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(this@MainActivity)
             fusedLocationClient.lastLocation
                 .addOnSuccessListener { location: Location? ->
+                    Log.d(TAG, "addOnSuccessListener????????? : $location")
+
                     if (location != null) {
                         mLocation = location
                     }
-                }
+                    Log.d(TAG, "mLocation Update : $location")
+                    isFinished = false
 
-            val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
+                    val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
 
-            var address = geocoder.getFromLocation(
-                mLocation.latitude,
-                mLocation.longitude,
-                10
-            )
-            if(address == null || address.isEmpty()){
-                Toast.makeText(applicationContext, "주소 미발견", Toast.LENGTH_SHORT).show()
-            }
-            Log.d(TAG, "Address: $address[0]")
-
-            val items = address[0].toString().split(" ")
-
-
-            val DBresult = NationalWeatherDB.nationalWeatherInterface().search(items[1],items[2],items[3])
-
-            val mNow = System.currentTimeMillis()
-            val mDate = Date(mNow)
-            val mformat1 = SimpleDateFormat("yyyyMMdd")
-            val mformat2 = SimpleDateFormat("H")
-            val date = mformat1.format(mDate).toInt()
-            var time = mformat2.format(mDate).toInt()
-            if(time%2==0) {
-                time--
-            }
-
-            val call = ApiObject.retrofitService.GetWeather(
-                "JSON",
-                100,
-                1,
-                date,
-                time,
-                DBresult[0].Nx.toString(),
-                DBresult[0].Ny.toString()
-            )
-            call.enqueue(object : retrofit2.Callback<WEATHER> {
-                override fun onResponse(call: Call<WEATHER>, response: Response<WEATHER>) {
-                    if (response.isSuccessful) {
-                        Log.d("api", response.body().toString())
-                        Log.d("api", response.body()!!.response.body.items.item.toString())
-                        Log.d("api", response.body()!!.response.body.items.item[0].category)
+                    while (isFinished) {
+                        Log.d(TAG, "waiting fusedLocationClient")
                     }
+
+                    val address = geocoder.getFromLocation(
+                        mLocation.latitude,
+                        mLocation.longitude,
+                        10
+                    )
+                    if (address == null || address.isEmpty()) {
+                        Toast.makeText(applicationContext, "주소 미발견", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.d(TAG, "Address: $address[0]")
+
+                    val items = address[0].toString().split(" ")
+
+
+                    var searchresult:List<NationalWeatherTable> = emptyList()
+                    val r = Runnable {
+                        searchresult = NationalWeatherDB.nationalWeatherInterface()
+                            .search(items[1], items[2])
+                        Log.d(TAG, "Setting searchresult   $searchresult / ${items[1]} / ${items[2]} /")
+
+                        val mNow = System.currentTimeMillis()
+                        val mDate = Date(mNow)
+                        val mformat1 = SimpleDateFormat("yyyyMMdd")
+                        val mformat2 = SimpleDateFormat("H")
+                        val date = mformat1.format(mDate).toInt()
+                        var time = mformat2.format(mDate).toInt()
+                        if (time % 2 == 0) {
+                            time--
+                        }
+
+                        val call = ApiObject.retrofitService.GetWeather(
+                            "JSON",
+                            100,
+                            1,
+                            date,
+                            time,
+                            searchresult[0].Nx.toString(),
+                            searchresult[0].Ny.toString()
+                        )
+                        call.enqueue(object : retrofit2.Callback<WEATHER> {
+                            override fun onResponse(call: Call<WEATHER>, response: Response<WEATHER>) {
+                                if (response.isSuccessful) {
+                                    Log.d("api", response.body().toString())
+                                    Log.d("api", response.body()!!.response.body.items.item.toString())
+                                    Log.d("api", response.body()!!.response.body.items.item[0].category)
+                                }
+                            }
+
+                            override fun onFailure(call: Call<WEATHER>, t: Throwable) {
+                                Log.d("api fail : ", t.message.toString())
+                            }
+                        })
+                    }
+
+                    val thread = Thread(r)
+                    thread.start()
+
                 }
-
-                override fun onFailure(call: Call<WEATHER>, t: Throwable) {
-                    Log.d("api fail : ", t.message.toString())
-                }
-            })
-        }
-
-
 
     }
-
 }
