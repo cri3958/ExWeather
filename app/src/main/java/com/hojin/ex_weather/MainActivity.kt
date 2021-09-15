@@ -131,16 +131,17 @@ class MainActivity : AppCompatActivity() {
                         val mNow = System.currentTimeMillis()
                         val mDate = Date(mNow)
                         val mformat1 = SimpleDateFormat("yyyyMMdd")
-                        val mformat2 = SimpleDateFormat("H")
+                        val mformat2 = SimpleDateFormat("HHmm")
                         val date = mformat1.format(mDate).toInt()
                         var time = mformat2.format(mDate).toInt()
-                        if (time % 2 == 0) {
-                            time--
-                        }
 
+                        Log.d(TAG, "onCreate: $date")
+                        Log.d(TAG, "onCreate: $time")
+                        Log.d(TAG, "onCreate: ${searchresult[0].Nx.toString()}")
+                        Log.d(TAG, "onCreate: ${searchresult[0].Ny.toString()}")
                         val call = ApiObject.retrofitService.GetWeather(
                             "JSON",
-                            100,
+                            50,
                             1,
                             date,
                             time,
@@ -151,8 +152,12 @@ class MainActivity : AppCompatActivity() {
                             override fun onResponse(call: Call<WEATHER>, response: Response<WEATHER>) {
                                 if (response.isSuccessful) {
                                     Log.d("api", response.body().toString())
-                                    Log.d("api", response.body()!!.response.body.items.item.toString())
-                                    Log.d("api", response.body()!!.response.body.items.item[0].category)
+                                    Log.d("api", response.body()!!.response.body.items.item.toString())//다 잘들어옴
+                                    for(i in response.body()!!.response.body.items.item){
+                                        if(i.category=="T1H"){
+
+                                        }
+                                    }
                                 }
                             }
 
