@@ -153,7 +153,11 @@ class MainActivity : AppCompatActivity() {
                                 if (response.isSuccessful) {
                                     Log.d("api", response.body().toString())
                                     Log.d("api", response.body()!!.response.body.items.item.toString())//다 잘들어옴
-                                    Log.d("api", response.body()!!.response.body.items.item.)
+                                    for(i in response.body()!!.response.body.items.item){
+                                        if(i.category=="T1H"){
+
+                                        }
+                                    }
                                 }
                             }
 
