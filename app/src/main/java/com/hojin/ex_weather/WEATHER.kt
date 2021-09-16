@@ -26,5 +26,10 @@ data class ITEMS(
 data class ITEM(
     val baseDate:Int,
     val baseTime:Int,
-    val category:String
+    val category:String,
+    val fcstDate:String,
+    val fcstTime:String,
+    val fcstValue:String,
+    val nx:Int,
+    val ny:Int
 )

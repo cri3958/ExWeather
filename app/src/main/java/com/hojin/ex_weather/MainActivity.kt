@@ -7,6 +7,8 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -103,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d(TAG, "mLocation Update : $location")
                     isFinished = false
 
-                    val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
+                    val geocoder = Geocoder(this, Locale.getDefault())
 
                     while (isFinished) {
                         Log.d(TAG, "waiting fusedLocationClient")
@@ -153,11 +155,28 @@ class MainActivity : AppCompatActivity() {
                                 if (response.isSuccessful) {
                                     Log.d("api", response.body().toString())
                                     Log.d("api", response.body()!!.response.body.items.item.toString())//다 잘들어옴
+                                    var t1h = false
+                                    var sky = false
                                     for(i in response.body()!!.response.body.items.item){
-                                        if(i.category=="T1H"){
-
+                                        if(i.category=="T1H" && !t1h){
+                                            t1h = true
+                                            findViewById<TextView>(R.id.text_weather).text = "현재온도 ${i.fcstValue}℃"
+                                        }
+                                        if(i.category=="SKY" && !sky){
+                                            sky = true
+                                            when(i.fcstValue.toInt()){
+                                                1->findViewById<ImageView>(R.id.image_weather).setImageResource(R.drawable.nb01)
+                                                3->findViewById<ImageView>(R.id.image_weather).setImageResource(R.drawable.nb03)
+                                                4->findViewById<ImageView>(R.id.image_weather).setImageResource(R.drawable.nb04)
+                                                else->findViewById<ImageView>(R.id.image_weather).setImageResource(R.drawable.ic_baseline_error_24)
+                                            }
+                                        }
+                                        if(t1h && sky) {
+                                            findViewById<TextView>(R.id.text_date).text = "${i.baseDate} ${i.baseTime}"
+                                            break
                                         }
                                     }
+                                    Log.d(TAG, "onResponse: finish work")
                                 }
                             }
 
@@ -171,6 +190,5 @@ class MainActivity : AppCompatActivity() {
                     thread.start()
 
                 }
-
     }
 }
