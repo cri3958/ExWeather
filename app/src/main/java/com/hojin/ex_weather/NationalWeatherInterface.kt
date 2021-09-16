@@ -7,9 +7,6 @@ import androidx.room.Query
 const val table = "NationalWeatherTable"
 const val string1 = "string1"
 const val string2 = "string2"
-const val string3 = "string3"
-
-const val addresstable = "db_address"
 
 @Dao
 interface NationalWeatherInterface {
