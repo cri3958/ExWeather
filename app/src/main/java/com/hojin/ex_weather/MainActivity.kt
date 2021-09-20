@@ -182,6 +182,7 @@ class MainActivity : AppCompatActivity() {
 
                             override fun onFailure(call: Call<WEATHER>, t: Throwable) {
                                 Log.d("api fail : ", t.message.toString())
+                                findViewById<TextView>(R.id.text_date).text = "${t.message.toString()}"
                             }
                         })
                     }

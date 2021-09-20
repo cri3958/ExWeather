@@ -1,0 +1,27 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Ex_Weather.AppWidget.Container"
+    android:id="@+id/widget"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.Ex_Weather.AppWidgetContainer">
+
+    <ImageView
+        android:id="@+id/widget_image_weather"
+        android:src="@drawable/nb01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/widget_text_weather"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        android:layout_below="@id/widget_image_weather"/>
+
+    <TextView
+        android:id="@+id/widget_text_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/widget_text_weather"
+        android:text="TextView" />
+</RelativeLayout>
